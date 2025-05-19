@@ -1,0 +1,52 @@
+{
+  "name": "diary",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "start": "node Backend/app.js",
+    "dev": "nodemon Backend/app.js",
+    "coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {},
+    "collectCoverage": true,
+    "coverageDirectory": "./coverage",
+    "collectCoverageFrom": [
+      "Backend/**/*.js"
+    ],
+    "moduleNameMapper": {}
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kingsheunn/Diary.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kingsheunn/Diary/issues"
+  },
+  "homepage": "https://github.com/Kingsheunn/Diary#readme",
+  "devDependencies": {
+    "@babel/core": "^7.27.1",
+    "@babel/preset-env": "^7.27.2",
+    "@babel/register": "^7.27.1",
+    "@istanbuljs/esm-loader-hook": "^0.3.0",
+    "babel-plugin-istanbul": "^7.0.0",
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.10",
+    "nyc": "^17.1.0",
+    "supertest": "^7.1.1"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "express": "^5.1.0",
+    "joi": "^17.13.3",
+    "node-cron": "^4.0.5"
+  }
+}
