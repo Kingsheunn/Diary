@@ -1,37 +1,44 @@
-import users from "../models/users.js"; 
+import pool from "../models/users.js";
 
 class UsersService {
-  static getAllUsers() {
-    return users;
+  static async getAllUsers() {
+    const res = await pool.query("SELECT * FROM users ORDER BY id");
+    return res.rows;
   }
 
-  static getUserById(id) {
-    return users.find((user) => user.id === parseInt(id, 10));
+  static async getUserById(id) {
+    const res = await pool.query("SELECT * FROM users WHERE id = $1", [
+      Number(id),
+    ]);
+    return res.rows[0] || null;
   }
 
-  static createUser(data) {
-    const newUser = {
-      id: users.length + 1,
-      ...data,
-    };
-    users.push(newUser);
-    return newUser;
+  static async createUser({ name, email, password }) {
+    const res = await pool.query(
+      "INSERT INTO users(name, email, password) VALUES ($1, $2, $3) RETURNING *",
+      [name, email, password]
+    );
+    return res.rows[0];
   }
 
-  static updateUser(id, data) {
-    const index = users.findIndex((user) => user.id === parseInt(id, 10));
-    if (index === -1) return null;
-
-    users[index] = { ...users[index], ...data };
-    return users[index];
+  static async updateUser(id, { name, email, password }) {
+    const res = await pool.query(
+      `UPDATE users SET
+        name = COALESCE($1, name),
+        email = COALESCE($2, email),
+        password = COALESCE($3, password)
+      WHERE id = $4 RETURNING *`,
+      [name, email, password, Number(id)]
+    );
+    return res.rows[0] || null;
   }
 
-  static deleteUser(id) {
-    const index = users.findIndex((user) => user.id === parseInt(id, 10));
-    if (index === -1) return null;
-
-    const [deleted] = users.splice(index, 1);
-    return deleted;
+  static async deleteUser(id) {
+    const res = await pool.query(
+      "DELETE FROM users WHERE id = $1 RETURNING *",
+      [Number(id)]
+    );
+    return res.rows[0] || null;
   }
 }
 

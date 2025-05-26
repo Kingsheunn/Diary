@@ -1,7 +1,15 @@
-const users = [
-  { id: 3, name: "brad ", age: "42", reminderTime: "23:00"},
-  { id: 1, name: "Alice", age: 30, reminderTime: "20:00" },
-  { id: 2, name: "Bob", age: 40, reminderTime: "19:30" },
-];
+import dotenv from 'dotenv';
+import pkg from 'pg';
+dotenv.config();
 
-export default users;
+const { Pool } = pkg;
+
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+});
+
+export default pool;

@@ -1,39 +1,51 @@
 import EntriesService from "../services/EntriesService.js";
-import { validateEntry } from '../validators/entryValidator.js';
-
 class EntriesController {
-  static getAllEntries(req, res) {
-    const entries = EntriesService.getAllEntries();
-    res.status(200).json({ entries, status: "Ok", message: "All entries" });
+  static async getAllEntries(req, res) {
+  try {
+    const entries = await EntriesService.getAllEntries();
+    res.status(200).json(entries); // <- This should return an array
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch entries' });
+  }
+}
+
+
+  
+  static async getByUserId(req, res) {
+    const { userId } = req.params;
+    const entries = await EntriesService.getEntriesByUserId(userId);
+    res.json(entries);
   }
 
-  static getEntry(req, res) {
-    const entry = EntriesService.getEntryById(req.params.id);
-    if (!entry) return res.status(404).json({ message: "Entry does not exist", status: "error" });
+  static async getEntry(req, res) {
+    const entries = await EntriesService.getEntryById(req.params.id);
+    if (!entries) return res.status(404).json({ message: "Entry does not exist", status: "error" });
 
-    res.status(200).json({ entry, status: "Success" });
+    res.status(200).json({ entries, status: "Success" });
   }
 
-  static addEntry(req, res) {
-    const { error } = validateEntry(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message, status: "Failed" });
-
-    const entry = EntriesService.addEntry(req.body);
-    res.status(201).json({ entry, status: "Success", message: "Entry added successfully" });
+  static async createEntry(req, res) {
+  try {
+    const entry = await EntriesService.createEntry(req.body);
+    res.status(201).json(entry); // <- Make sure you're returning this
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create entry' });
   }
+}
 
-  static updateEntry(req, res) {
-    const { error } = validateEntry(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message, status: "Failed" });
 
-    const entry = EntriesService.updateEntry(req.params.id, req.body);
-    if (!entry) return res.status(404).json({ message: "Entry does not exist", status: "error" });
-
-    res.status(200).json({ entry, status: "Success", message: "Entry updated successfully" });
+  static async updateEntry(req, res) {
+  try {
+    const updatedEntry = await EntriesService.updateEntry(req.params.id, req.body);
+    res.status(200).json(updatedEntry); // <- Ensure this returns the updated entry
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update entry' });
   }
+}
 
-  static removeEntry(req, res) {
-    const entry = EntriesService.removeEntry(req.params.id);
+
+  static async removeEntry(req, res) {
+    const entry = await EntriesService.deleteEntry(req.params.id);
     if (!entry) return res.status(404).json({ message: "Entry does not exist", status: "error" });
 
     res.status(200).json({ entry, status: "Success", message: "Entry deleted successfully" });

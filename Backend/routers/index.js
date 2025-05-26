@@ -14,8 +14,9 @@ router.get("/api/v1", (req, res) => {
 
 // Entry routes
 router.get("/api/v1/entries", EntriesController.getAllEntries);
+router.get('/api/v1/users/:userId/entries', EntriesController.getByUserId);
 router.get("/api/v1/entries/:id", EntriesController.getEntry);
-router.post("/api/v1/entries", EntriesController.addEntry);
+router.post("/api/v1/entries", EntriesController.createEntry);
 router.put("/api/v1/entries/:id", EntriesController.updateEntry);
 router.delete("/api/v1/entries/:id", EntriesController.removeEntry);
 
