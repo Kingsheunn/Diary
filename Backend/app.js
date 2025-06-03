@@ -1,6 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
-import routes from "./routers/index.js";
+import router from "./routers/index.js";
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 // Register routes
-routes(app);
+app.use(router);
 
 
 

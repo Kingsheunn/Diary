@@ -6,6 +6,5 @@ hello.test.js
 coverage
 src
 .babelrc
-entryValidator.js
 .env
 init.sql

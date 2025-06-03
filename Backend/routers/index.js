@@ -1,7 +1,7 @@
 import { Router } from "express";
 import EntriesController from "../controllers/EntriesController.js";
 import UsersController from "../controllers/UsersController.js";
-
+import authenticate from "../middleware/auth.js"
 const router = Router();
 
 // Welcome route
@@ -13,22 +13,22 @@ router.get("/api/v1", (req, res) => {
 });
 
 // Entry routes
-router.get("/api/v1/entries", EntriesController.getAllEntries);
-router.get('/api/v1/users/:userId/entries', EntriesController.getByUserId);
-router.get("/api/v1/entries/:id", EntriesController.getEntry);
-router.post("/api/v1/entries", EntriesController.createEntry);
-router.put("/api/v1/entries/:id", EntriesController.updateEntry);
-router.delete("/api/v1/entries/:id", EntriesController.removeEntry);
+router.get("/api/v1/entries", authenticate, EntriesController.getAllEntries);
+router.get("/api/v1/entries/:id", authenticate, EntriesController.getEntryById);
+router.post("/api/v1/entries", authenticate, EntriesController.createEntry);
+router.put("/api/v1/entries/:id", authenticate, EntriesController.updateEntry);
+router.delete("/api/v1/entries/:id", authenticate, EntriesController.removeEntry);
 
 // User routes
-router.get("/api/v1/users", UsersController.getAll);
-router.get("/api/v1/users/:id", UsersController.getById);
-router.post("/api/v1/users", UsersController.create);
-router.put("/api/v1/users/:id", UsersController.update);
-router.delete("/api/v1/users/:id", UsersController.delete);
+router.post("/api/v1/usersController/signup", UsersController.signUp);
+router.post("/api/v1/usersController/login", UsersController.signIn);
+router.get("/api/v1/profile", authenticate, UsersController.getUser);
+router.put("/api/v1/profile", authenticate, UsersController.updateUser);
 
-const routes = (app) => {
-  app.use(router); // Use the router for all defined routes
-};
+// Notification routes
+router.put('/api/v1/reminder', authenticate, UsersController.setReminder);
+router.get('/api/v1/reminder', authenticate, UsersController.getReminder);
 
-export default routes;
+
+
+export default router;

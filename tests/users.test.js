@@ -1,70 +1,138 @@
-// import "dotenv/config";
-// import request from "supertest";
-// import app from "../Backend/app.js";
-// import pool from "../Backend/models/users.js";
-// console.log("Is pool a function?", typeof pool.query);
+import request from 'supertest';
+import app from '../Backend/app.js'; 
+import pool from '../Backend/models/users.js';
 
-// beforeAll(async () => {
-//   await pool.query("DELETE FROM users");
-//   const res = await pool.query("SELECT * FROM users");
-//   console.log("Users after cleanup:", res.rows);
-// });
+let token;
 
-// afterAll(async () => {
-//   await pool.end();
-// });
+// Create a valid token for testing
+beforeAll(async () => {
+  // Clean up database
+  await pool.query('DELETE FROM users');
 
-// let userId;
+  // Register user for authentication tests
+  const res = await request(app).post('/api/v1/usersController/signup').send({
+    name: 'Samuel George',
+    email: 'samuel@example.com',
+    password: 'password'
+  });
 
-// describe("Users API", () => {
-//   test("should create a new user", async () => {
-//     const res = await request(app).post("/api/v1/users").send({
-//       name: "Test User",
-//       email: "testuser@example.com",
-//       password: "testpass123",
-//     });
-//     const allUsers = await pool.query("SELECT * FROM users");
-//     console.log("Users after creation:", allUsers.rows);
+  // Login to get token
+  const loginRes = await request(app).post('/api/v1/usersController/login').send({
+    email: 'samuel@example.com',
+    password: 'password'
+  });
 
-//     expect(res.statusCode).toBe(201);
-//     expect(res.body.name).toBe("Test User");
-//     expect(res.body.email).toBe("testuser@example.com");
-//     userId = Number(res.body.id); // Ensure userId is a number
-//   });
+  token = loginRes.body.token;
+});
 
-//   test("should fetch all users", async () => {
-//     const res = await request(app).get("/api/v1/users");
-//     expect(res.statusCode).toBe(200);
-//     expect(Array.isArray(res.body)).toBe(true);
-//     expect(res.body.length).toBeGreaterThan(0);
-//   });
+describe('Users API ', () => {
+  it('should not register with missing fields', async () => {
+    const res = await request(app).post('/api/v1/usersController/signup').send({ email: 'test@example.com' });
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty('message');
+  });
 
-//   test("should fetch a user by ID", async () => {
-//     const res = await request(app).get(`/api/v1/users/${userId}`);
-//     expect(res.statusCode).toBe(200);
-//     expect(Number(res.body.id)).toBe(userId); // Compare as numbers
-//     expect(res.body.name).toBe("Test User");
-//   });
+  it('should not register an already existing user', async () => {
+    const res = await request(app).post('/api/v1/usersController/signup').send({
+      name: 'Samuel George',
+      email: 'samuel@example.com',
+      password: 'password'
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.body).toHaveProperty('message', 'User already exists');
+  });
 
-//   test("should update a user", async () => {
-//     const res = await request(app).put(`/api/v1/users/${userId}`).send({
-//       name: "Updated User",
-//       email: "updated@example.com",
-//     });
+  it('should authenticate a valid user', async () => {
+    const res = await request(app).post('/api/v1/usersController/login').send({
+      email: 'samuel@example.com',
+      password: 'password'
+    });
+    if (res.statusCode !== 200) {
+    console.log('❌ Expected 200, got:', res.statusCode);
+    console.log('Response body:', JSON.stringify(res.body, null, 2));
+    console.log('Response text:', res.text);
+  }
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('token');
+  });
 
-//     expect(res.statusCode).toBe(200);
-//     expect(res.body.name).toBe("Updated User");
-//     expect(res.body.email).toBe("updated@example.com");
-//   });
+  it('should not authenticate with missing fields', async () => {
+    const res = await request(app).post('/api/v1/usersController/login').send({ password: 'password' });
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty('message');
+  });
 
-//   test("should delete a user", async () => {
-//     const res = await request(app).delete(`/api/v1/users/${userId}`);
-//     expect(res.statusCode).toBe(200);
-//     expect(res.body.message).toMatch(/deleted successfully/i);
-//   });
+  it('should not authenticate with wrong credentials', async () => {
+    const res = await request(app).post('/api/v1/usersController/login').send({
+      email: 'samuel@example.com',
+      password: 'wrongpassword'
+    });
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toHaveProperty('message', 'Invalid email or password');
+  });
 
-//   test("should return 404 for non-existent user", async () => {
-//     const res = await request(app).get(`/api/v1/users/999999`);
-//     expect(res.statusCode).toBe(404);
-//   });
-// });
+  it('should return user profile', async () => {
+    const res = await request(app)
+      .get('/api/v1/profile')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('email', 'samuel@example.com');
+  });
+
+  it('should reject profile access with invalid token', async () => {
+    const res = await request(app)
+      .get('/api/v1/profile')
+      .set('Authorization', 'Bearer wrongtoken');
+      console.log('JWT_KEY:', process.env.JWT_KEY);
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('should update user profile', async () => {
+    const res = await request(app)
+      .put('/api/v1/profile')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Updated Name',
+        email: 'updated@example.com'
+      });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe('Profile updated successfully');
+  });
+
+  it('should not update with invalid request', async () => {
+    const res = await request(app)
+      .put('/api/v1/profile')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Bad Field',
+        email: 'badexample.com'
+      });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('should set reminder', async () => {
+    const res = await request(app)
+      .put('/api/v1/reminder')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ remind: true });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe('Reminder set succesfully');
+  });
+
+  it('should reject bad reminder request', async () => {
+    const res = await request(app)
+      .put('/api/v1/reminder?remind=today')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ remind: 'today' });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('should get reminder status', async () => {
+    const res = await request(app)
+      .get('/api/v1/reminder')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.time[0]).toHaveProperty('reminder', true);
+  });
+});

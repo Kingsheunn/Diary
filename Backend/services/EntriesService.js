@@ -1,29 +1,37 @@
-import EntriesModel from "../models/entries.js";
+import pool from '../models/users.js';
 
-class EntriesService {
-  static getAllEntries() {
-    return EntriesModel.getAllEntries();
-  }
+const EntriesService = {
+  async getAllEntries(user_id) {
+    const  res  = await pool.query('SELECT * FROM entries WHERE user_id = $1 ORDER BY created_at DESC', [user_id]);
+    return res.rows;
+  },
 
-   static getEntriesByUserId(userId) {
-    return EntriesModel.getEntriesByUserId(userId);
-  }
 
-  static getEntryById(id) {
-    return EntriesModel.getEntryById(id);
-  }
+  async getEntryById(id, user_id) {
+    const  result = await pool.query('SELECT * FROM entries WHERE id = $1 AND user_id = $2', [id, user_id]);
+    return result.rows[0];
+  },
 
-  static createEntry(data) {
-    return EntriesModel.createEntry(data);
-  }
+  async createEntry(user_id, title, content) {
+    const  result  = await pool.query(
+      'INSERT INTO entries (user_id, title, content) VALUES ($1, $2, $3) RETURNING *',
+      [user_id, title, content]
+    );
+    return result.rows[0];
+  },
 
-  static updateEntry(id, data) {
-    return EntriesModel.updateEntry(id, data);
-  }
+  async updateEntry(title, content, id, user_id) {
+    const  result  = await pool.query(
+      'UPDATE entries SET title = $1, content = $2 WHERE id = $3 AND user_id = $4 RETURNING *',
+      [title, content, id, user_id]
+    );
+    return result.rows[0];
+  },
 
-  static deleteEntry(id) {
-    return EntriesModel.deleteEntry(id);
+  async deleteEntry(id, user_id) {
+    const  result  = await pool.query('DELETE FROM entries WHERE id = $1 AND user_id = $2 RETURNING *', [id, user_id]);
+    return result.rows[0];
   }
-}
+};
 
 export default EntriesService;
