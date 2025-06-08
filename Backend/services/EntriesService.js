@@ -1,35 +1,37 @@
-import entries from "../models/entries.js";
+import pool from '../models/users.js';
 
-class EntriesService {
-  static getAllEntries() {
-    return entries;
+const EntriesService = {
+  async getAllEntries(user_id) {
+    const  res  = await pool.query('SELECT * FROM entries WHERE user_id = $1 ORDER BY created_at DESC', [user_id]);
+    return res.rows;
+  },
+
+
+  async getEntryById(id, user_id) {
+    const  result = await pool.query('SELECT * FROM entries WHERE id = $1 AND user_id = $2', [id, user_id]);
+    return result.rows[0];
+  },
+
+  async createEntry(user_id, title, content) {
+    const  result  = await pool.query(
+      'INSERT INTO entries (user_id, title, content) VALUES ($1, $2, $3) RETURNING *',
+      [user_id, title, content]
+    );
+    return result.rows[0];
+  },
+
+  async updateEntry(title, content, id, user_id) {
+    const  result  = await pool.query(
+      'UPDATE entries SET title = $1, content = $2 WHERE id = $3 AND user_id = $4 RETURNING *',
+      [title, content, id, user_id]
+    );
+    return result.rows[0];
+  },
+
+  async deleteEntry(id, user_id) {
+    const  result  = await pool.query('DELETE FROM entries WHERE id = $1 AND user_id = $2 RETURNING *', [id, user_id]);
+    return result.rows[0];
   }
-
-  static getEntryById(id) {
-    return entries.find(entry => entry.id === parseInt(id, 10));
-  }
-
-  static addEntry(data) {
-    const newEntry = { id: entries.length + 1, ...data };
-    entries.push(newEntry);
-    return newEntry;
-  }
-
-  static updateEntry(id, data) {
-    const entry = entries.find(e => e.id === parseInt(id, 10));
-    if (!entry) return null;
-
-    Object.assign(entry, data);
-    return entry;
-  }
-
-  static removeEntry(id) {
-    const index = entries.findIndex(e => e.id === parseInt(id, 10));
-    if (index === -1) return null;
-
-    const [deleted] = entries.splice(index, 1);
-    return deleted;
-  }
-}
+};
 
 export default EntriesService;

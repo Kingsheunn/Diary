@@ -1,10 +1,10 @@
 import Joi from "joi";
 
 export const entrySchema = Joi.object({
-  userId: Joi.number().integer().required(),
+  user_id: Joi.number().integer().optional(),
   title: Joi.string().min(3).required(),
-  body: Joi.string().allow(''), 
-  date: Joi.string().required() 
+  content: Joi.string().allow(''), 
+  date: Joi.string().optional() 
 });
 
 export function validateEntry(data) {

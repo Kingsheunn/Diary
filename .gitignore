@@ -6,3 +6,5 @@ hello.test.js
 coverage
 src
 .babelrc
+.env
+init.sql

@@ -1,42 +1,86 @@
 import EntriesService from "../services/EntriesService.js";
-import { validateEntry } from '../validators/entryValidator.js';
+import { validateEntry } from "../validators/entryValidator.js";
 
 class EntriesController {
-  static getAllEntries(req, res) {
-    const entries = EntriesService.getAllEntries();
-    res.status(200).json({ entries, status: "Ok", message: "All entries" });
+  static async getAllEntries(req, res) {
+    const entries = await EntriesService.getAllEntries(req.user.id);
+    if (entries.length === 0) {
+      return res.status(200).json({ entries: [], count: 0, status: "Success" });
+    }
+    res.status(200).json({
+      entries,
+      count: entries.length,
+      status: "Success",
+    });
   }
 
-  static getEntry(req, res) {
-    const entry = EntriesService.getEntryById(req.params.id);
-    if (!entry) return res.status(404).json({ message: "Entry does not exist", status: "error" });
+  static async getEntryById(req, res) {
+    const entryId = parseInt(req.params.id, 10);
 
+    if (isNaN(entryId) || entryId <= 0) {
+      return res.status(400).json({ message: "Invalid entry ID" });
+    }
+
+    const entry = await EntriesService.getEntryById(entryId, req.user.id);
+
+    if (!entry) {
+      return res.status(404).json({
+        message: "Entry not found!",
+        status: "error",
+      });
+    }
     res.status(200).json({ entry, status: "Success" });
   }
 
-  static addEntry(req, res) {
+  static async createEntry(req, res) {
+    const { title, content } = req.body;
     const { error } = validateEntry(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message, status: "Failed" });
-
-    const entry = EntriesService.addEntry(req.body);
-    res.status(201).json({ entry, status: "Success", message: "Entry added successfully" });
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+    const entry = await EntriesService.createEntry(req.user.id, title, content);
+    return res.status(201).json(entry);
   }
 
-  static updateEntry(req, res) {
+  static async updateEntry(req, res) {
+    const { title, content } = req.body;
     const { error } = validateEntry(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message, status: "Failed" });
-
-    const entry = EntriesService.updateEntry(req.params.id, req.body);
-    if (!entry) return res.status(404).json({ message: "Entry does not exist", status: "error" });
-
-    res.status(200).json({ entry, status: "Success", message: "Entry updated successfully" });
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+    const updatedEntry = await EntriesService.updateEntry(
+      title,
+      content,
+      req.params.id,
+      req.user.id
+    );
+    if (!updatedEntry) {
+      return res.status(404).json({
+        message: "Entry not found!",
+        status: "error",
+      });
+    }
+    res.status(200).json(updatedEntry);
   }
 
-  static removeEntry(req, res) {
-    const entry = EntriesService.removeEntry(req.params.id);
-    if (!entry) return res.status(404).json({ message: "Entry does not exist", status: "error" });
+  static async removeEntry(req, res) {
+    const deletedEntry = await EntriesService.deleteEntry(
+      req.params.id,
+      req.user.id
+    );
 
-    res.status(200).json({ entry, status: "Success", message: "Entry deleted successfully" });
+    if (!deletedEntry) {
+      return res.status(404).json({
+        message: "Entry not found or you do not have permission",
+        status: "error",
+      });
+    }
+
+    res.status(200).json({
+      entry: deletedEntry,
+      status: "Success",
+      message: "Entry deleted successfully",
+    });
   }
 }
 
