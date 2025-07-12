@@ -2,6 +2,8 @@ import express, { Router } from "express";
 import EntriesController from "../controllers/EntriesController.js";
 import UsersController from "../controllers/UsersController.js";
 import authenticate from "../middleware/auth.js";
+import validateSignInMiddleware from '../validators/validateSignIn.js';
+import validateSignUpMiddleware from '../validators/validateSignUp.js';
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -27,14 +29,21 @@ router.put("/api/v1/entries/:id", authenticate, EntriesController.updateEntry);
 router.delete("/api/v1/entries/:id", authenticate, EntriesController.removeEntry);
 
 // User routes
-router.post("/api/v1/auth/signup", UsersController.signUp);
-router.post("/api/v1/auth/login", UsersController.signIn);
+router.post("/api/v1/auth/signup", validateSignUpMiddleware, (req, res, next) => {
+  UsersController.signUp(req, res, next);
+});
+router.post("/api/v1/auth/login", validateSignInMiddleware, (req, res, next) => {
+  UsersController.signIn(req, res, next);
+});
 router.get("/api/v1/profile", authenticate, UsersController.getUser);
 router.put("/api/v1/profile", authenticate, UsersController.updateUser);
 
 // Notification routes
 router.put('/api/v1/reminder', authenticate, UsersController.setReminder);
 router.get('/api/v1/reminder', authenticate, UsersController.getReminder);
+
+// Test cleanup route (for development only)
+router.delete('/test-cleanup', UsersController.testCleanup);
 
 // Frontend routes - handle all unmatched routes by serving index.html
 router.get(/^(?!\/api\/v1).*/, (req, res) => {

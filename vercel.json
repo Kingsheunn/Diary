@@ -4,6 +4,10 @@
     {
       "src": "Backend/routers/index.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "UI/**/*",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -12,8 +16,26 @@
       "dest": "Backend/routers/index.js"
     },
     {
+      "src": "/js/(.*)",
+      "dest": "UI/js/$1",
+      "headers": {
+        "Content-Type": "application/javascript",
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/css/(.*)",
+      "dest": "UI/css/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
       "src": "/(.*)",
-      "dest": "UI/index.html"
+      "dest": "UI/index.html",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      }
     }
   ]
 }

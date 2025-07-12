@@ -16,11 +16,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Form submission handlers
+  document.getElementById('loginForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const email = form.querySelector('[name="email"]').value;
+    const password = form.querySelector('[name="password"]').value;
+    handleLogin(email, password);
+  });
+
   // Initial route
   router();
 });
 
-// Router function
 function router() {
   const path = window.location.pathname;
   const match = Object.keys(routes).find(route => {
@@ -61,9 +69,27 @@ function showDashboard() {
 }
 
 function showEntryEditor(entryId) {
-  if (entryId) {
-    fetch(`/api/v1/entries/${entryId}`)
-      .then(response => response.json())
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('No authentication token found. Please log in again.');
+    navigateTo('/');
+    return;
+  }
+  
+  if (entryId && entryId !== 'new') {
+    fetch(`/api/v1/entries/${entryId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(err => {
+            throw new Error(`Failed to fetch entry: ${err.message || 'Unknown error'} (Status: ${response.status})`);
+          });
+        }
+        return response.json();
+      })
       .then(entry => {
         document.getElementById('entry-editor').innerHTML = `
           <h2>Edit Entry</h2>
@@ -71,6 +97,14 @@ function showEntryEditor(entryId) {
           <textarea id="entry-content">${entry.content}</textarea>
           <button onclick="saveEntry('${entryId}')">Save</button>
         `;
+      })
+      .catch(error => {
+        console.error('Error loading entry:', error);
+        alert(`Failed to load entry: ${error.message}`);
+        if (error.message.includes('No token provided') || error.message.includes('Access denied')) {
+          localStorage.removeItem('token');
+          navigateTo('/');
+        }
       });
   } else {
     document.getElementById('entry-editor').innerHTML = `
@@ -86,27 +120,45 @@ function showEntryEditor(entryId) {
 
 // API functions
 function fetchEntries() {
-  fetch('/api/v1/entries')
-    .then(response => response.json())
-    .then(entries => {
+  fetch('/api/v1/entries', {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => {
+          throw new Error(`Failed to fetch entries: ${err.message || 'Unknown error'} (Status: ${response.status})`);
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (!Array.isArray(data.entries)) {
+        throw new Error('Invalid entries data format');
+      }
       const entriesContainer = document.querySelector('.entries');
-      entriesContainer.innerHTML = entries.map(entry => `
+      entriesContainer.innerHTML = data.entries.map(entry => `
         <div class="entry">
           <div class="entry-header">
             <h3>${entry.title}</h3>
             <div class="entry-actions">
               <span class="entry-date">${new Date(entry.created_at).toLocaleString()}</span>
               <button class="edit-btn" onclick="navigateTo('/entry/${entry.id}')">
-                <i class="fas fa-edit"></i>
+                <i class="fas fa-edit"></i> Edit
               </button>
               <button class="delete-btn" onclick="deleteEntry('${entry.id}')">
-                <i class="fas fa-trash"></i>
+                <i class="fas fa-trash"></i> Delete
               </button>
             </div>
           </div>
           <p class="note">${entry.content}</p>
         </div>
       `).join('');
+    })
+    .catch(error => {
+      console.error('Error fetching entries:', error);
+      alert(`Failed to load entries: ${error.message}`);
     });
 }
 
@@ -114,91 +166,159 @@ function saveEntry(entryId) {
   const title = document.getElementById('entry-title').value;
   const content = document.getElementById('entry-content').value;
   
-  const method = entryId ? 'PUT' : 'POST';
-  const url = entryId ? `/api/v1/entries/${entryId}` : '/api/v1/entries';
+  if (!title || !content) {
+    alert('Please fill in both title and content');
+    return;
+  }
+
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('No authentication token found. Please log in again.');
+    navigateTo('/');
+    return;
+  }
+
+  const method = entryId && entryId !== 'new' ? 'PUT' : 'POST';
+  const url = entryId && entryId !== 'new' ? `/api/v1/entries/${entryId}` : '/api/v1/entries';
   
   fetch(url, {
     method,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      'Authorization': `Bearer ${token}`
     },
     body: JSON.stringify({ title, content })
   })
+  .then(response => {
+    if (!response.ok) {
+      return response.json().then(err => {
+        throw new Error(`Failed to save entry: ${err.message || 'Unknown error'} (Status: ${response.status})`);
+      });
+    }
+    return response.json();
+  })
   .then(() => {
     navigateTo('/dashboard');
+  })
+  .catch(error => {
+    console.error('Error saving entry:', error);
+    alert(`Error saving entry: ${error.message}`);
+    if (error.message.includes('No token provided') || error.message.includes('Access denied')) {
+      localStorage.removeItem('token');
+      navigateTo('/');
+    }
   });
 }
 
 function deleteEntry(entryId) {
+  if (!confirm('Are you sure you want to delete this entry?')) return;
+  
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('No authentication token found. Please log in again.');
+    navigateTo('/');
+    return;
+  }
+  
   fetch(`/api/v1/entries/${entryId}`, {
     method: 'DELETE',
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      'Authorization': `Bearer ${token}`
     }
   })
-  .then(() => {
+  .then(response => {
+    if (!response.ok) {
+      return response.json().then(err => {
+        throw new Error(`Failed to delete entry: ${err.message || 'Unknown error'} (Status: ${response.status})`);
+      });
+    }
     fetchEntries();
+  })
+  .catch(error => {
+    console.error('Error deleting entry:', error);
+    alert(`Failed to delete entry: ${error.message}`);
+    if (error.message.includes('No token provided') || error.message.includes('Access denied')) {
+      localStorage.removeItem('token');
+      navigateTo('/');
+    }
   });
+}
+
+function logout() {
+  localStorage.removeItem('token');
+  navigateTo('/');
 }
 
 // Auth functions
-function handleLogin(email, password) {
-  console.log('Attempting login with:', email);
-  fetch('/api/v1/auth/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ email, password })
-  })
-  .then(response => {
+async function handleLogin(email, password) {
+  if (!email || !password) {
+    alert('Please enter both email and password');
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/v1/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+
     if (!response.ok) {
-      throw new Error('Login failed: ' + response.status);
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Login failed');
     }
-    return response.json();
-  })
-  .then(data => {
+
+    const data = await response.json();
     if (!data.token) {
-      throw new Error('No token received');
+      throw new Error('Authentication token missing in response');
     }
-    console.log('Login successful, token received');
+
     localStorage.setItem('token', data.token);
     navigateTo('/dashboard');
-  })
-  .catch(error => {
+  } catch (error) {
     console.error('Login error:', error);
-    alert('Login failed. Please check console for details.');
-  });
+    alert(`Login failed: ${error.message}`);
+  }
 }
 
-function handleSignup(name, email, password) {
-  console.log('Attempting signup with:', name, email);
-  fetch('/api/v1/auth/signup', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ name, email, password })
-  })
-  .then(response => {
+async function handleSignup(name, email, password) {
+  if (!name || !email || !password) {
+    alert('Please fill in all fields');
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/v1/auth/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ name, email, password })
+    });
+
     if (!response.ok) {
-      throw new Error('Signup failed: ' + response.status);
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Signup failed');
     }
-    return response.json();
-  })
-  .then(data => {
+
+    const data = await response.json();
     if (!data.token) {
-      throw new Error('No token received');
+      console.error('Authentication token missing in response:', data);
+      throw new Error('Authentication token missing in response');
     }
-    console.log('Signup successful, token received');
+
     localStorage.setItem('token', data.token);
+    console.log('Token saved to localStorage:', data.token);
+    alert('Signup successful. Token saved.');
     navigateTo('/dashboard');
-  })
-  .catch(error => {
+  } catch (error) {
     console.error('Signup error:', error);
-    alert('Signup failed. Please check console for details.');
-  });
+    alert(`Signup failed: ${error.message}`);
+  }
 }
 
 // Existing toggle functionality

@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-function auth(req, res, next) {
+function authenticate(req, res, next) {
   const token =
     req.header("x-auth-token") ||
     req.header("authorization")?.replace("Bearer ", "");
@@ -17,4 +17,4 @@ function auth(req, res, next) {
     res.status(401).json({ message: "Invalid token.", status:"error" });
   }
 }
-export default auth;
+export default authenticate;

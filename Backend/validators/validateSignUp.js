@@ -9,4 +9,17 @@ const validateSignUp = (user) => {
   return schema.validate(user);
 };
 
-export default validateSignUp;
+const validateSignUpMiddleware = (req, res, next) => {
+  const { error } = validateSignUp(req.body);
+  
+  if (error) {
+    return res.status(400).json({
+      message: error.details[0].message,
+      status: "error"
+    });
+  }
+  
+  next();
+};
+
+export default validateSignUpMiddleware;
