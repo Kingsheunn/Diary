@@ -25,31 +25,34 @@ class UsersService {
   }
 
   static async signUp({ name, email, password }) {
-    const existingUser = await pool.query(
-      "SELECT id FROM users WHERE email = $1",
-      [email]
-    );
-    const user = existingUser.rows[0];
-    if (user) return null;
+    try {
+      const existingUser = await pool.query(
+        "SELECT id FROM users WHERE email = $1",
+        [email]
+      );
+      const user = existingUser.rows[0];
+      if (user) {
+        throw new Error('Email already exists');
+      }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
 
-    await pool.query(
-      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3)",
-      [name, email, hashedPassword]
-    );
+      const insertResult = await pool.query(
+        "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, email, created_at",
+        [name, email, hashedPassword]
+      );
+      
+      const newUser = insertResult.rows[0];
+      const token = jwt.sign({ id: newUser.id }, process.env.JWT_KEY, {
+        expiresIn: "1d",
+      });
 
-    const result = await pool.query(
-      "SELECT id, email, created_at FROM users WHERE email = $1",
-      [email]
-    );
-    const newUser = result.rows[0];
-    const token = jwt.sign({ id: newUser.id }, process.env.JWT_KEY, {
-      expiresIn: "1d",
-    });
-
-    return { user: newUser, token };
+      return { user: newUser, token };
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
   }
 
   static async getUser(userId) {

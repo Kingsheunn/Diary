@@ -8,3 +8,5 @@ src
 .babelrc
 .env
 init.sql
+.vercel
+.env.production

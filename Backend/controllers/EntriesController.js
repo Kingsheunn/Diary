@@ -44,6 +44,12 @@ class EntriesController {
 
   static async updateEntry(req, res) {
     const { title, content } = req.body;
+    const entryId = parseInt(req.params.id, 10);
+    
+    if (isNaN(entryId) || entryId <= 0) {
+      return res.status(400).json({ message: "Invalid entry ID" });
+    }
+
     const { error } = validateEntry(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
@@ -51,7 +57,7 @@ class EntriesController {
     const updatedEntry = await EntriesService.updateEntry(
       title,
       content,
-      req.params.id,
+      entryId,
       req.user.id
     );
     if (!updatedEntry) {
@@ -64,8 +70,14 @@ class EntriesController {
   }
 
   static async removeEntry(req, res) {
+    const entryId = parseInt(req.params.id, 10);
+    
+    if (isNaN(entryId) || entryId <= 0) {
+      return res.status(400).json({ message: "Invalid entry ID" });
+    }
+
     const deletedEntry = await EntriesService.deleteEntry(
-      req.params.id,
+      entryId,
       req.user.id
     );
 
