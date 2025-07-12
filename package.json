@@ -8,7 +8,8 @@
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "start": "node Backend/app.js",
     "dev": "nodemon Backend/app.js",
-    "coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage"
+    "coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "build": "echo \"No build step\""
   },
   "jest": {
     "testEnvironment": "node",
