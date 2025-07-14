@@ -1,5 +1,5 @@
-import validateSignIn from '../validators/validateSignIn.js';
-import validateSignUp from '../validators/validateSignUp.js';
+import validateSignIn from '../Backend/validators/validateSignIn.js';
+import validateSignUp from '../Backend/validators/validateSignUp.js';
 
 describe('Validation Middleware', () => {
   describe('SignIn Validation', () => {

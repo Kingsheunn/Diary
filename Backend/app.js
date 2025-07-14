@@ -38,9 +38,9 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server
-if (process.env.VERCEL !== "test") {
-  app.listen(port, '127.0.0.1', () => {
-    console.log(`Server started on http://127.0.0.1:${port}`);
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`Server started on port${port}`);
   });
 }
 

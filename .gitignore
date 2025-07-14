@@ -1,12 +1,12 @@
 .vscode
 node_modules
 package-lock.json
-hello.test.js
 .nyc_output
 coverage
 src
 .babelrc
 .env
-init.sql
 .vercel
 .env.production
+.github
+.gitignore
