@@ -19,7 +19,8 @@
         <form onsubmit="event.preventDefault(); handleSignup(
           this.querySelector('[name=name]').value,
           this.querySelector('[name=email]').value,
-          this.querySelector('[name=password]').value
+          this.querySelector('[name=password]').value,
+          this.querySelector('[name=confirm-password]').value
         )">
           <h1>Create A Diary Account</h1>
           <div class="social-icons">
@@ -32,6 +33,8 @@
           <input type="text" name="name" placeholder="Name" required />
           <input type="email" name="email" placeholder="Email" required />
           <input type="password" name="password" placeholder="Password" required />
+          <input type="password" name="confirm-password" placeholder="Confirm Password" required />
+          <span id="password-match-error" style="color: red; display: none; font-size: 14px;">Passwords do not match</span>
           <button type="submit">Sign Up</button>
         </form>
       </div>

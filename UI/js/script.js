@@ -284,11 +284,26 @@ async function handleLogin(email, password) {
   }
 }
 
-async function handleSignup(name, email, password) {
-  if (!name || !email || !password) {
+async function handleSignup(name, email, password, confirmPassword) {
+  // Validate inputs
+  if (!name || !email || !password || !confirmPassword) {
     alert('Please fill in all fields');
     return;
   }
+
+  // Check password match
+  if (password !== confirmPassword) {
+    document.getElementById('password-match-error').style.display = 'block';
+    return;
+  } else {
+    document.getElementById('password-match-error').style.display = 'none';
+  }
+
+  // Disable the submit button to prevent multiple submissions
+  const signupBtn = document.querySelector('.form-container.sign-up form button[type="submit"]');
+  const originalBtnText = signupBtn.innerHTML;
+  signupBtn.disabled = true;
+  signupBtn.innerHTML = 'Signing up...';
 
   try {
     const response = await fetch('/api/v1/auth/signup', {
@@ -318,6 +333,10 @@ async function handleSignup(name, email, password) {
   } catch (error) {
     console.error('Signup error:', error);
     alert(`Signup failed: ${error.message}`);
+  } finally {
+    // Re-enable the button
+    signupBtn.disabled = false;
+    signupBtn.innerHTML = originalBtnText;
   }
 }
 
