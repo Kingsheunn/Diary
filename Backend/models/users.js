@@ -1,14 +1,21 @@
-import dotenv from 'dotenv';
-import pkg from 'pg';
+import dotenv from "dotenv";
+import pkg from "pg";
 dotenv.config();
 
 const { Pool } = pkg;
 
 const pool = new Pool(
-  process.env.NODE_ENV === 'production'
+  process.env.NODE_ENV === "production"
     ? {
-        connectionString: process.env.DATABASE_URL,
-        ssl: false 
+        connectionString: process.env.DATABASE_PUBLIC_URL,
+        ssl: {
+          rejectUnauthorized: false,
+        },
+        max: 1, // for Vercel functions
+        min: 0,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 2000,
+        allowExitOnIdle: true,
       }
     : {
         user: process.env.DB_USER,
@@ -18,5 +25,9 @@ const pool = new Pool(
         port: process.env.DB_PORT,
       }
 );
+  pool.on('error', (err) => {
+     console.error('Database pool error:', err);
+    }
+  );
 
 export default pool;
