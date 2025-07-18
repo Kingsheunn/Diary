@@ -72,16 +72,14 @@ class UsersService {
     return result.rows[0] || null;
   }
 
-  static async setReminder(userId, reminderStatus) {
-    return NotificationService.setReminder(reminderStatus, userId);
+  static async setReminder(userId, reminderSettings) {
+    return NotificationService.setReminder(reminderSettings, userId);
   }
 
   static async getReminder(userId) {
     const result = await NotificationService.getReminder(userId);
-    // NotificationService.getReminder returns an array, so get first item
-    return {
-      reminder: result && result.length > 0 ? result[0].reminder : false,
-    };
+    // NotificationService.getReminder returns the settings object directly
+    return result;
   }
 }
 

@@ -59,21 +59,46 @@ class UsersController {
   }
 
   static async setReminder(req, res) {
-    const { error } = validateReminder(req.body);
-    if (error)
-      return res.status(400).json({ message: error.details[0].message });
+    try {
+      // Handle both old format (req.body.remind) and new format (req.body.dailyReminder, etc.)
+      let reminderSettings;
+      
+      if (req.body.remind !== undefined) {
+        // Old format - convert to new format
+        reminderSettings = {
+          dailyReminder: req.body.remind,
+          reminderTime: '17:00',
+          weeklyReminder: false,
+          summaryDay: '1'
+        };
+      } else {
+        // New format from frontend
+        reminderSettings = {
+          dailyReminder: req.body.dailyReminder || false,
+          reminderTime: req.body.reminderTime || '09:00',
+          weeklyReminder: req.body.weeklyReminder || false,
+          summaryDay: req.body.summaryDay || '1'
+        };
+      }
 
-    await UsersService.setReminder(req.user.id, req.body.remind);
+      await UsersService.setReminder(req.user.id, reminderSettings);
 
-    res.status(200).json({ message: "Reminder set successfully" });
+      res.status(200).json({ message: "Reminder settings saved successfully" });
+    } catch (error) {
+      console.error('Set reminder error:', error);
+      res.status(500).json({ message: "Failed to save reminder settings" });
+    }
   }
 
   static async getReminder(req, res) {
-    const reminderData = await UsersService.getReminder(req.user.id);
+    try {
+      const reminderData = await UsersService.getReminder(req.user.id);
 
-    res.status(200).json({
-      time: [{ reminder: reminderData.reminder }], // Format expected by test
-    });
+      res.status(200).json(reminderData);
+    } catch (error) {
+      console.error('Get reminder error:', error);
+      res.status(500).json({ message: "Failed to get reminder settings" });
+    }
   }
   
   // Test cleanup endpoint (for development only)
