@@ -12,6 +12,14 @@
   ],
   "routes": [
     {
+      "src": "/api-docs",
+      "dest": "Backend/app.js"
+    },
+    {
+      "src": "/api-docs/(.*)",
+      "dest": "Backend/app.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "Backend/app.js"
     },

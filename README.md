@@ -8,6 +8,7 @@ A personal diary application that allows users to document their thoughts, memor
 - **Diary Entries**: Create, view, edit, and delete personal diary entries with titles and content.
 - **Dashboard**: A clean interface to view all entries with a welcome message for users.
 - **Responsive Design**: Styled with CSS for a pleasant user experience on various devices.
+- **API Documentation**: Comprehensive Swagger documentation for all endpoints.
 
 ## Technology Stack
 
@@ -29,6 +30,18 @@ A personal diary application that allows users to document their thoughts, memor
    git clone https://github.com/Kingsheunn/Diary.git
    cd Diary
    ```
+
+## API Documentation
+
+The application includes Swagger API documentation. You can access the documentation at:
+
+[https://diary-roan.vercel.app/api-docs](https://diary-roan.vercel.app/api-docs)
+
+The documentation provides:
+- Detailed endpoint descriptions
+- Request/response examples
+- Interactive testing capabilities
+- Ability to test endpoints directly from the documentation
 
 2. **Install Dependencies**: Install the necessary npm packages.
    ```bash
