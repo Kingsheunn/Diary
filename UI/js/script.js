@@ -64,7 +64,9 @@ function showLogin() {
 
 function showDashboard() {
   fetchEntries();
+  fetchUserProfile();
   document.getElementById('container').style.display = 'none';
+  document.getElementById('entry-editor').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
 }
 
@@ -92,10 +94,23 @@ function showEntryEditor(entryId) {
       })
       .then(entry => {
         document.getElementById('entry-editor').innerHTML = `
+          <div class="entry-header">
+            <button class="btn-back" onclick="showDashboard()">
+              <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+            <span class="entry-date">Date: ${new Date().toLocaleDateString()}</span>
+          </div>
           <h2>Edit Entry</h2>
-          <input type="text" id="entry-title" value="${entry.title}">
-          <textarea id="entry-content">${entry.content}</textarea>
-          <button onclick="saveEntry('${entryId}')">Save</button>
+          <input type="text" id="entry-title" value="${entry.title}" placeholder="Entry title">
+          <textarea id="entry-content" placeholder="Write your thoughts...">${entry.content}</textarea>
+          <div class="entry-actions">
+            <button class="btn-primary" onclick="saveEntry('${entryId}')">
+              <i class="fas fa-save"></i> Save Entry
+            </button>
+            <button class="btn-secondary" onclick="showDashboard()">
+              <i class="fas fa-times"></i> Cancel
+            </button>
+          </div>
         `;
       })
       .catch(error => {
@@ -108,10 +123,23 @@ function showEntryEditor(entryId) {
       });
   } else {
     document.getElementById('entry-editor').innerHTML = `
+      <div class="entry-header">
+        <button class="btn-back" onclick="showDashboard()">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </button>
+        <span class="entry-date">Date: ${new Date().toLocaleDateString()}</span>
+      </div>
       <h2>New Entry</h2>
-      <input type="text" id="entry-title" placeholder="Title">
+      <input type="text" id="entry-title" placeholder="Entry title">
       <textarea id="entry-content" placeholder="Write your thoughts..."></textarea>
-      <button onclick="saveEntry()">Save</button>
+      <div class="entry-actions">
+        <button class="btn-primary" onclick="saveEntry()">
+          <i class="fas fa-save"></i> Save Entry
+        </button>
+        <button class="btn-secondary" onclick="showDashboard()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+      </div>
     `;
   }
   document.getElementById('dashboard').style.display = 'none';
@@ -138,23 +166,33 @@ function fetchEntries() {
         throw new Error('Invalid entries data format');
       }
       const entriesContainer = document.querySelector('.entries');
-      entriesContainer.innerHTML = data.entries.map(entry => `
-        <div class="entry">
-          <div class="entry-header">
-            <h3>${entry.title}</h3>
-            <div class="entry-actions">
-              <span class="entry-date">${new Date(entry.created_at).toLocaleString()}</span>
-              <button class="edit-btn" onclick="navigateTo('/entry/${entry.id}')">
-                <i class="fas fa-edit"></i> Edit
-              </button>
-              <button class="delete-btn" onclick="deleteEntry('${entry.id}')">
-                <i class="fas fa-trash"></i> Delete
-              </button>
-            </div>
+      
+      if (data.entries.length === 0) {
+        entriesContainer.innerHTML = `
+          <div class="no-entries">
+            <i class="fas fa-book-open"></i>
+            <p>No entries yet. Start writing your first diary entry!</p>
           </div>
-          <p class="note">${entry.content}</p>
-        </div>
-      `).join('');
+        `;
+      } else {
+        entriesContainer.innerHTML = data.entries.map(entry => `
+          <div class="entry">
+            <div class="entry-header">
+              <h3>${entry.title}</h3>
+              <div class="entry-actions">
+                <span class="entry-date">${new Date(entry.created_at).toLocaleString()}</span>
+                <button class="edit-btn" onclick="navigateTo('/entry/${entry.id}')">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="delete-btn" onclick="deleteEntry('${entry.id}')">
+                  <i class="fas fa-trash"></i> Delete
+                </button>
+              </div>
+            </div>
+            <p class="note">${entry.content}</p>
+          </div>
+        `).join('');
+      }
     })
     .catch(error => {
       console.error('Error fetching entries:', error);
@@ -337,6 +375,134 @@ async function handleSignup(name, email, password, confirmPassword) {
     // Re-enable the button
     signupBtn.disabled = false;
     signupBtn.innerHTML = originalBtnText;
+  }
+}
+
+// Profile and notification functions
+function fetchUserProfile() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  
+  fetch('/api/v1/profile', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(response => response.json())
+  .then(user => {
+    document.getElementById('welcome-message').textContent = `Welcome back, ${user.name}!`;
+    document.getElementById('user-email').textContent = user.email;
+  })
+  .catch(error => {
+    console.error('Error fetching profile:', error);
+  });
+}
+
+function showProfileModal() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please log in to access settings');
+    return;
+  }
+  
+  // Load current profile data
+  fetch('/api/v1/profile', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(response => response.json())
+  .then(user => {
+    document.getElementById('profile-name').value = user.name || '';
+    document.getElementById('profile-email').value = user.email || '';
+  })
+  .catch(error => {
+    console.error('Error loading profile:', error);
+  });
+  
+  // Load current reminder settings
+  fetch('/api/v1/reminder', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(response => response.json())
+  .then(settings => {
+    if (settings.dailyReminder) {
+      document.getElementById('daily-reminders').checked = true;
+      document.getElementById('reminder-time').value = settings.reminderTime || '09:00';
+    }
+    if (settings.weeklyReminder) {
+      document.getElementById('weekly-summaries').checked = true;
+      document.getElementById('summary-day').value = settings.summaryDay || '1';
+    }
+  })
+  .catch(error => {
+    console.error('Error loading reminder settings:', error);
+  });
+  
+  document.getElementById('profile-modal').style.display = 'block';
+}
+
+function closeProfileModal() {
+  document.getElementById('profile-modal').style.display = 'none';
+}
+
+function saveProfileSettings() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please log in to save settings');
+    return;
+  }
+  
+  const name = document.getElementById('profile-name').value;
+  const dailyReminders = document.getElementById('daily-reminders').checked;
+  const reminderTime = document.getElementById('reminder-time').value;
+  const weeklyReminders = document.getElementById('weekly-summaries').checked;
+  const summaryDay = document.getElementById('summary-day').value;
+  
+  // Save profile updates
+  const profilePromise = fetch('/api/v1/profile', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ name })
+  });
+  
+  // Save reminder settings
+  const reminderPromise = fetch('/api/v1/reminder', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      dailyReminder: dailyReminders,
+      reminderTime: reminderTime,
+      weeklyReminder: weeklyReminders,
+      summaryDay: summaryDay
+    })
+  });
+  
+  Promise.all([profilePromise, reminderPromise])
+    .then(() => {
+      alert('Settings saved successfully!');
+      closeProfileModal();
+      fetchUserProfile(); // Refresh profile display
+    })
+    .catch(error => {
+      console.error('Error saving settings:', error);
+      alert('Error saving settings. Please try again.');
+    });
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+  const modal = document.getElementById('profile-modal');
+  if (event.target === modal) {
+    closeProfileModal();
   }
 }
 

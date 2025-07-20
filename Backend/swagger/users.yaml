@@ -1,0 +1,188 @@
+# User authentication and management endpoints
+paths:
+  /signin:
+    post:
+      summary: Authenticate a user
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required:
+                - email
+                - password
+      responses:
+        200:
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                  message:
+                    type: string
+                  token:
+                    type: string
+        401:
+          description: Invalid credentials
+        500:
+          description: Server error
+
+  /signup:
+    post:
+      summary: Register a new user
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        201:
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  message:
+                    type: string
+                  token:
+                    type: string
+        409:
+          description: Email already exists
+        500:
+          description: Server error
+
+  /user:
+    get:
+      summary: Get current user details
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: User details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                  name:
+                    type: string
+                  message:
+                    type: string
+        404:
+          description: User not found
+
+    put:
+      summary: Update current user details
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200:
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        400:
+          description: Validation error
+
+  /reminder:
+    post:
+      summary: Set reminder settings
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dailyReminder:
+                  type: boolean
+                reminderTime:
+                  type: string
+                weeklyReminder:
+                  type: boolean
+                summaryDay:
+                  type: string
+              example:
+                dailyReminder: true
+                reminderTime: "17:00"
+                weeklyReminder: false
+                summaryDay: "1"
+      responses:
+        200:
+          description: Reminder settings saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        500:
+          description: Server error
+
+    get:
+      summary: Get reminder settings
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Reminder settings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dailyReminder:
+                    type: boolean
+                  reminderTime:
+                    type: string
+                  weeklyReminder:
+                    type: boolean
+                  summaryDay:
+                    type: string
+        500:
+          description: Server error
