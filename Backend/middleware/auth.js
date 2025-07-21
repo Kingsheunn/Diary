@@ -1,6 +1,11 @@
 import jwt from "jsonwebtoken";
 
 function authenticate(req, res, next) {
+  // Skip authentication for Swagger documentation
+  if (req.path.startsWith('/api-docs')) {
+    return next();
+  }
+  
   const token =
     req.header("x-auth-token") ||
     req.header("authorization")?.replace("Bearer ", "");
