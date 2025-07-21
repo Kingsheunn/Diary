@@ -5,9 +5,6 @@ import cors from "cors";
 // Swagger setup
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
-import YAML from "yamljs";
-import { readdirSync } from "fs";
-import { join } from "path";
 import configureRoutes from "./routers/index.js";
 
 const app = express();
@@ -23,6 +20,9 @@ app.use(
 );
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Configure routes
+configureRoutes(app);
 
 // Swagger JSDoc configuration
 const swaggerDefinition = {
@@ -46,102 +46,17 @@ const swaggerDefinition = {
       description: "Local development server"
     }
   ],
-  components: {
-    securitySchemes: {
-      bearerAuth: {
-        type: "http",
-        scheme: "bearer",
-        bearerFormat: "JWT"
-      }
-    },
-    schemas: {
-      Entry: {
-        type: "object",
-        properties: {
-          id: {
-            type: "integer"
-          },
-          user_id: {
-            type: "integer"
-          },
-          title: {
-            type: "string"
-          },
-          content: {
-            type: "string"
-          },
-          created_at: {
-            type: "string",
-            format: "date-time"
-          },
-          updated_at: {
-            type: "string",
-            format: "date-time"
-          }
-        }
-      },
-      EntryInput: {
-        type: "object",
-        required: ["title", "content"],
-        properties: {
-          title: {
-            type: "string"
-          },
-          content: {
-            type: "string"
-          }
-        }
-      },
-      User: {
-        type: "object",
-        required: ["name", "email", "password"],
-        properties: {
-          name: {
-            type: "string"
-          },
-          email: {
-            type: "string",
-            format: "email"
-          },
-          password: {
-            type: "string",
-            format: "password"
-          }
-        }
-      }
-    }
-  }
 };
 
-// Load YAML files from swagger directory
-const swaggerDir = join(process.cwd(), "Backend", "swagger");
-const yamlFiles = readdirSync(swaggerDir).filter(file => file.endsWith('.yaml'));
-const swaggerDocs = yamlFiles.map(file => YAML.load(join(swaggerDir, file)));
-
-// Combine all Swagger definitions
-const combinedPaths = {};
-const combinedComponents = { schemas: {}, securitySchemes: {} };
-
-swaggerDocs.forEach(doc => {
-  Object.assign(combinedPaths, doc.paths || {});
-  if (doc.components) {
-    Object.assign(combinedComponents.schemas, doc.components.schemas || {});
-    Object.assign(combinedComponents.securitySchemes, doc.components.securitySchemes || {});
-  }
-});
-
-// Create final Swagger specification
-const swaggerSpec = {
-  ...swaggerDefinition,
-  paths: combinedPaths,
-  components: combinedComponents
+const swaggerOptions = {
+  swaggerDefinition,
+  apis: ["./Backend/routers/*.js", "./Backend/controllers/*.js"],
 };
 
-// Swagger UI route
+const swaggerSpec = swaggerJSDoc(swaggerOptions);
+
+// Swagger UI route - simplified version
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// Configure routes
-configureRoutes(app);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
