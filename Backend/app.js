@@ -55,6 +55,11 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
+// Serve OpenAPI specification
+app.get("/openapi.json", (req, res) => {
+  res.json(swaggerSpec);
+});
+
 // Swagger UI route - simplified version
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
