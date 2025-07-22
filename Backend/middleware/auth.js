@@ -2,7 +2,13 @@ import jwt from "jsonwebtoken";
 
 function authenticate(req, res, next) {
   // Skip authentication for Swagger documentation
-  if (req.path.startsWith('/api-docs')) {
+  if (
+    req.path.startsWith('/api-docs') ||
+    req.path.includes('swagger-ui') ||
+    req.path.endsWith('.json') ||
+    req.path.endsWith('.css') ||
+    req.path.endsWith('.js')
+  ) {
     return next();
   }
   

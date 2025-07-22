@@ -77,7 +77,7 @@ export default function configureRoutes(app) {
   app.use(express.static(path.join(__dirname, "../../UI")));
 
   // SPA fallback route
-  app.get(/^(?!\/api\/v1).*/, (req, res) => {
+  app.get(/^(?!\/api\/v1|\/api-docs).*/, (req, res) => {
     res.sendFile(path.join(__dirname, "../../UI/index.html"));
   });
 }
