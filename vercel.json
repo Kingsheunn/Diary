@@ -49,7 +49,7 @@
       }
     },
     {
-      "src": "/(.*)",
+      "src": "/((?!api-docs).*)",
       "dest": "UI/index.html",
       "headers": {
         "Cache-Control": "public, max-age=0, must-revalidate"
