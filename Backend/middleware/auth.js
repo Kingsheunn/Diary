@@ -7,8 +7,7 @@ function authenticate(req, res, next) {
     req.path.includes('swagger-ui') ||
     req.path.endsWith('.json') ||
     req.path.endsWith('.css') ||
-    req.path.endsWith('.js') ||
-    req.path === '/swagger-ui.html'
+    req.path.endsWith('.js')
   ) {
     return next();
   }
