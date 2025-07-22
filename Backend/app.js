@@ -5,10 +5,14 @@ import cors from "cors";
 // Swagger setup
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
+import { join } from "path";
 import configureRoutes from "./routers/index.js";
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+// Create a separate router for documentation that bypasses authentication
+const docsRouter = express.Router();
 
 // Middleware
 app.use(
@@ -20,9 +24,6 @@ app.use(
 );
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// Configure routes
-configureRoutes(app);
 
 // Swagger JSDoc configuration
 const swaggerDefinition = {
@@ -50,18 +51,27 @@ const swaggerDefinition = {
 
 const swaggerOptions = {
   swaggerDefinition,
-  apis: ["./Backend/routers/*.js", "./Backend/controllers/*.js"],
+  apis: ["./Backend/routers/index.js", "./Backend/controllers/*.js"],
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
-// Serve OpenAPI specification
-app.get("/openapi.json", (req, res) => {
+// Add documentation routes to the docsRouter
+docsRouter.get("/openapi.json", (req, res) => {
   res.json(swaggerSpec);
 });
 
-// Swagger UI route - simplified version
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+docsRouter.get("/swagger-ui.html", (req, res) => {
+  res.sendFile(join(process.cwd(), "UI", "swagger-ui.html"));
+});
+
+docsRouter.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Apply documentation router (without authentication)
+app.use(docsRouter);
+
+// Configure main application routes (with authentication)
+configureRoutes(app);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
