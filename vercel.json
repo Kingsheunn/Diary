@@ -49,7 +49,7 @@
       }
     },
     {
-      "src": "/((?!api-docs).*)",
+      "src": "/((?!api-docs|swagger-ui\\.html).*)",
       "dest": "UI/index.html",
       "headers": {
         "Cache-Control": "public, max-age=0, must-revalidate"
