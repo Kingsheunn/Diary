@@ -33,15 +33,15 @@ A personal diary application that allows users to document their thoughts, memor
 
 ## API Documentation
 
-The application includes Swagger API documentation. You can access the documentation at:
+The application includes Swagger API documentation. After starting the server, you can access the documentation at:
 
-[https://diary-roan.vercel.app/api-docs](https://diary-roan.vercel.app/api-docs)
+- Local development: `http://localhost:5000/api-docs`
+- Production: `https://diary-roan.vercel.app/api-docs`
 
 The documentation provides:
 - Detailed endpoint descriptions
 - Request/response examples
 - Interactive testing capabilities
-- Ability to test endpoints directly from the documentation
 
 2. **Install Dependencies**: Install the necessary npm packages.
    ```bash

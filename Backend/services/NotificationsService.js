@@ -44,7 +44,7 @@ class NotificationService {
 
   static async getUsersWithReminders() {
     const result = await pool.query(
-      "SELECT email, name, reminder, reminder_time, weekly_reminder, summary_day FROM users WHERE reminder = true OR weekly_reminder = true"
+      "SELECT email, name, reminder, reminder_time FROM users WHERE reminder = true "
     );
     return result.rows;
   }

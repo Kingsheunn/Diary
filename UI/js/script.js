@@ -92,13 +92,17 @@ function showEntryEditor(entryId) {
         }
         return response.json();
       })
-      .then(entry => {
+      .then(data => {
+        const entry = data.entry; // Assuming the API returns { entry: { ... } }
+        if (!entry) {
+          throw new Error('Received invalid data format from server.');
+        }
         document.getElementById('entry-editor').innerHTML = `
           <div class="entry-header">
             <button class="btn-back" onclick="showDashboard()">
               <i class="fas fa-arrow-left"></i> Back to Dashboard
             </button>
-            <span class="entry-date">Date: ${new Date().toLocaleDateString()}</span>
+            <span class="entry-date">Date: ${new Date(entry.created_at).toLocaleDateString()}</span>
           </div>
           <h2>Edit Entry</h2>
           <input type="text" id="entry-title" value="${entry.title}" placeholder="Entry title">

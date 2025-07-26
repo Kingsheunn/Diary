@@ -43,20 +43,35 @@ class EntriesController {
   }
 
   static async updateEntry(req, res) {
-    const { title, content } = req.body;
     const entryId = parseInt(req.params.id, 10);
     
     if (isNaN(entryId) || entryId <= 0) {
       return res.status(400).json({ message: "Invalid entry ID" });
     }
 
-    const { error } = validateEntry(req.body);
+    // Fetch existing entry to preserve values
+    const existingEntry = await EntriesService.getEntryById(entryId, req.user.id);
+    if (!existingEntry) {
+      return res.status(404).json({
+        message: "Entry not found!",
+        status: "error",
+      });
+    }
+
+    // Merge existing values with updates
+    const updatedData = {
+      title: req.body.title || existingEntry.title,
+      content: req.body.content || existingEntry.content
+    };
+
+    // Validate only the updated data
+    const { error } = validateEntry(updatedData);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
     const updatedEntry = await EntriesService.updateEntry(
-      title,
-      content,
+      updatedData.title,
+      updatedData.content,
       entryId,
       req.user.id
     );
