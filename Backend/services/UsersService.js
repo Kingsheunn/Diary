@@ -78,7 +78,6 @@ class UsersService {
 
   static async getReminder(userId) {
     const result = await NotificationService.getReminder(userId);
-    // NotificationService.getReminder returns the settings object directly
     return result;
   }
 }

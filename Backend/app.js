@@ -8,7 +8,7 @@ import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import { readdirSync } from "fs";
 import { join } from "path";
-import configureRoutes from "./routers/index.js";
+import routes from "./routers/index.js";
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configure routes
-configureRoutes(app);
+routes(app);
 
 // Swagger JSDoc configuration
 const swaggerDefinition = {

@@ -93,7 +93,7 @@ function showEntryEditor(entryId) {
         return response.json();
       })
       .then(data => {
-        const entry = data.entry; // Assuming the API returns { entry: { ... } }
+        const entry = data.entry; 
         if (!entry) {
           throw new Error('Received invalid data format from server.');
         }
@@ -291,7 +291,6 @@ function logout() {
   navigateTo('/');
 }
 
-// Auth functions
 async function handleLogin(email, password) {
   if (!email || !password) {
     alert('Please enter both email and password');
