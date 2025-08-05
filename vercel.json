@@ -12,26 +12,6 @@
   ],
   "routes": [
     {
-      "src": "/api-docs/swagger-ui.css",
-      "dest": "/node_modules/swagger-ui-dist/swagger-ui.css"
-    },
-    {
-      "src": "/api-docs/swagger-ui-bundle.js",
-      "dest": "/node_modules/swagger-ui-dist/swagger-ui-bundle.js"
-    },
-    {
-      "src": "/api-docs/swagger-ui-standalone-preset.js",
-      "dest": "/node_modules/swagger-ui-dist/swagger-ui-standalone-preset.js"
-    },
-    {
-      "src": "/api-docs/favicon-32x32.png",
-      "dest": "/node_modules/swagger-ui-dist/favicon-32x32.png"
-    },
-    {
-      "src": "/api-docs/favicon-16x16.png",
-      "dest": "/node_modules/swagger-ui-dist/favicon-16x16.png"
-    },
-    {
       "src": "/api-docs(.*)",
       "dest": "Backend/app.js"
     },

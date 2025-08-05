@@ -11,7 +11,7 @@ function authenticate(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_KEY || process.env.JWT_SECRET);
-    req.user = decoded; // attach user info to request
+    req.user = decoded;
     next();
   } catch (ex) {
     res.status(401).json({ message: "Invalid token.", status:"error" });

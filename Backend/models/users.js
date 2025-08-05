@@ -11,7 +11,7 @@ const pool = new Pool(
         ssl: {
           rejectUnauthorized: false,
         },
-        max: 1, // for Vercel functions
+        max: 1,
         min: 0,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,

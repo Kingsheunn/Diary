@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export default function configureRoutes(app) {
+export default function routes(app) {
   // API Routes
   app.get("/api/v1", (req, res) => {
     res.status(200).json({
@@ -47,7 +47,7 @@ export default function configureRoutes(app) {
         
         const result = await resend.emails.send({
           from: 'My Diary <diary@resend.dev>',
-          to: 'akinwaleseun57@gmail.com', // Only works with registered email
+          to: 'akinwaleseun57@gmail.com',
           subject: 'Test Email from Diary App',
           html: `
             <html>

@@ -1,14 +1,40 @@
 # My Diary
-
 A personal diary application that allows users to document their thoughts, memories, and experiences securely. This application provides a user-friendly interface to create, edit, and delete diary entries, with user authentication to ensure privacy.
+
+## Project Overview
+**Application Links:**
+- [Live Application](https://diary-roan.vercel.app)
+- [API Documentation](https://documenter.getpostman.com/view/44888935/2sB3BBqBqC)
+
+## API Endpoints
+
+### Authentication
+- `POST /api/v1/auth/signup` - Create a new user account
+- `POST /api/v1/auth/login` - Authenticate user and get JWT token
+
+### User Profile
+- `GET /api/v1/profile` - Get authenticated user's profile
+- `PUT /api/v1/profile` - Update authenticated user's profile
+
+### Diary Entries
+- `GET /api/v1/entries` - Get all diary entries for authenticated user
+- `GET /api/v1/entries/:id` - Get specific diary entry by ID
+- `POST /api/v1/entries` - Create new diary entry
+- `PUT /api/v1/entries/:id` - Update existing diary entry
+- `DELETE /api/v1/entries/:id` - Delete diary entry
+
+### Reminders
+- `PUT /api/v1/reminder` - Configure reminder settings
+- `GET /api/v1/reminder` - Get current reminder settings
+
 
 ## Features
 
 - **User Authentication**: Secure signup and login system to protect user data.
 - **Diary Entries**: Create, view, edit, and delete personal diary entries with titles and content.
 - **Dashboard**: A clean interface to view all entries with a welcome message for users.
-- **Responsive Design**: Styled with CSS for a pleasant user experience on various devices.
-- **API Documentation**: Comprehensive Swagger documentation for all endpoints.
+- **Responsive Design**: Fully responsive layout using CSS Flexbox/Grid that adapts to mobile, tablet, and desktop screens for optimal viewing across devices.
+- **Reminder Notifications**: Configure email reminders to help users maintain consistent diary habits.
 
 ## Technology Stack
 
@@ -31,18 +57,6 @@ A personal diary application that allows users to document their thoughts, memor
    cd Diary
    ```
 
-## API Documentation
-
-The application includes Swagger API documentation. After starting the server, you can access the documentation at:
-
-- Local development: `http://localhost:5000/api-docs`
-- Production: `https://diary-roan.vercel.app/api-docs`
-
-The documentation provides:
-- Detailed endpoint descriptions
-- Request/response examples
-- Interactive testing capabilities
-
 2. **Install Dependencies**: Install the necessary npm packages.
    ```bash
    npm install
@@ -64,6 +78,7 @@ The documentation provides:
 - **Create Entry**: Click 'New Entry' on the dashboard to write a new diary entry.
 - **Edit Entry**: Use the 'Edit' button (with a pencil icon) to modify an existing entry.
 - **Delete Entry**: Use the 'Delete' button (with a trash icon) to remove an entry.
+- **Set And Get Notification**: Set, Update, Get notification through the pop-up settings.
 - **Logout**: Click 'Logout' to end your session and return to the login page.
 
 ## Contributing
